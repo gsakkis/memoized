@@ -1,6 +1,11 @@
 News
 ====
 
+0.2
+---
+
+* Add ``hashable`` parameter.
+
 0.1
 ---
 

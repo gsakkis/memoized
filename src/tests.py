@@ -88,6 +88,34 @@ class MemoizedTestCase(unittest.TestCase):
             self.assertMemoizedOk(self.f1, "x=1", memoized())
         self.assertMemoizedOk(self.f1, "x=1", memoized(allow_named=True))
 
+    def test_unhashable(self):
+        deco = memoized(hashable=False)
+        for f in self.f1, self.f2, self.f4, self.f5:
+            self.assertMemoizedOk(f, "[2]", deco)
+            self.assertMemoizedOk(f, "{'foo': 3}", deco)
+        for f in self.f2, self.f5:
+            self.assertMemoizedOk(f, "x=[2]", deco)
+            self.assertMemoizedOk(f, "x={'foo': 3}", deco)
+        for f in self.f2, self.f3, self.f4, self.f5:
+            self.assertMemoizedOk(f, "[2], {'foo': 3}", deco)
+        for f in self.f2, self.f3, self.f5:
+            self.assertMemoizedOk(f, "[2], y={'foo': 3}", deco)
+            self.assertMemoizedOk(f, "x=[2], y={'bar': 2}", deco)
+
+        for f in self.f3, self.f4, self.f5:
+            self.assertMemoizedOk(f, "[2], {'foo': 3}, 3", deco)
+
+        for f in self.f3, self.f5:
+            self.assertMemoizedOk(f, "[2], {'foo': 3}, z={1,2}", deco)
+            self.assertMemoizedOk(f, "[2], y={'foo': 3}, z={1,2}", deco)
+            self.assertMemoizedOk(f, "x=[2], y={'foo': 3}, z={1,2}", deco)
+
+        for f in self.f4, self.f5:
+            self.assertMemoizedOk(f, "*[[] for _ in range(10)]", deco)
+
+        self.assertMemoizedOk(self.f5, "x=[2], z={'foo': 3}", deco)
+        self.assertMemoizedOk(self.f5, "1, [2], {'foo': 3}, 4, z={5,6}", deco)
+
     def test_method(self):
         incr_calls = self.incr_calls
         class X(object):

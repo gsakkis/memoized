@@ -1,5 +1,6 @@
 import inspect
 import functools
+from cPickle import dumps
 try:
     from decorator import decorator
 except ImportError:
@@ -8,7 +9,8 @@ except ImportError:
 __all__ = ["memoized"]
 
 
-def memoized(is_method=False, allow_named=None, signature_preserving=False, cache=None):
+def memoized(is_method=False, allow_named=None, hashable=True,
+             signature_preserving=False, cache=None):
     """A generic efficient memoized decorator factory.
 
     Creates a memoizing decorator that decorates a function as efficiently as
@@ -21,6 +23,7 @@ def memoized(is_method=False, allow_named=None, signature_preserving=False, cach
         called by passing named parameters (e.g. ``f(x=3)`` instead of ``f(3)``).
         For performance reasons this is by default False if the function does
         not have optional parameters and True otherwise.
+    :param hashable: Set to False if any parameter may be non-hashable.
     :param signature_preserving: If True, the memoized function will have the
         same signature as the decorated function. Requires the ``decorator``
         module to be available.
@@ -29,26 +32,27 @@ def memoized(is_method=False, allow_named=None, signature_preserving=False, cach
         and ``__setitem__``. Defaults to a new empty dict.
     """
     return functools.partial(_memoized_dispatcher, is_method=is_method,
-                             allow_named=allow_named, cache=cache,
-                             signature_preserving=signature_preserving)
+                             allow_named=allow_named, hashable=hashable,
+                             cache=cache, signature_preserving=signature_preserving)
 
 
-def _memoized_dispatcher(func, is_method, allow_named, signature_preserving, cache):
+def _memoized_dispatcher(func, is_method, allow_named, hashable, signature_preserving, cache):
     spec = inspect.getargspec(func)
 
     if signature_preserving:
         if decorator is None:
             raise ValueError("The decorator module is required for signature_preserving=True")
-        return _sig_preserving_memoized(func, cache)
+        return _sig_preserving_memoized(func, hashable, cache)
 
     if allow_named is None:
         allow_named = bool(spec.defaults)
     if allow_named or spec.keywords:
-        return _args_kwargs_memoized(func, cache)
+        return _args_kwargs_memoized(func, hashable, cache)
 
     nargs = len(spec.args)
-    if nargs > 1 or spec.varargs or spec.defaults or (nargs == 0 and cache is not None):
-        return _args_memoized(func, cache)
+    if (nargs > 1 or spec.varargs or spec.defaults or not hashable or
+        nargs == 0 and cache is not None):
+        return _args_memoized(func, hashable, cache)
 
     if nargs == 1:
         if is_method or cache is not None:
@@ -59,11 +63,14 @@ def _memoized_dispatcher(func, is_method, allow_named, signature_preserving, cac
     return _fast_zero_arg_memoized(func)
 
 
-def _sig_preserving_memoized(func, cache=None):
+def _sig_preserving_memoized(func, hashable=True, cache=None):
     if cache is None:
         cache = {}
     def wrapper(func, *args, **kwargs):
-        key = (args, frozenset(kwargs.iteritems()))
+        if hashable:
+            key = (args, frozenset(kwargs.iteritems()))
+        else:
+            key = dumps((args, kwargs), -1)
         try:
             return cache[key]
         except KeyError:
@@ -72,12 +79,15 @@ def _sig_preserving_memoized(func, cache=None):
     return decorator(wrapper, func)
 
 
-def _args_kwargs_memoized(func, cache=None):
+def _args_kwargs_memoized(func, hashable=True, cache=None):
     if cache is None:
         cache = {}
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        key = (args, frozenset(kwargs.iteritems()))
+        if hashable:
+            key = (args, frozenset(kwargs.iteritems()))
+        else:
+            key = dumps((args, kwargs), -1)
         try:
             return cache[key]
         except KeyError:
@@ -86,12 +96,12 @@ def _args_kwargs_memoized(func, cache=None):
     return wrapper
 
 
-def _args_memoized(func, cache=None):
+def _args_memoized(func, hashable=True, cache=None):
     if cache is None:
         cache = {}
     @functools.wraps(func)
     def wrapper(*args):
-        key = args
+        key = args if hashable else dumps(args, -1)
         try:
             return cache[key]
         except KeyError:
