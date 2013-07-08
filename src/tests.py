@@ -175,3 +175,9 @@ class MemoizedTestCase(unittest.TestCase):
         for args_expr in "1, 2", "1, y=2", "x=1, y=2":
             self.assertMemoizedOk(self.f2, args_expr, deco)
         self.assertEqual(len(cache), 2)
+
+    def test_default_decorator(self):
+        @memoized
+        def func():
+            self.f0()
+        self.multicall(func, "", 1)

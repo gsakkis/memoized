@@ -5,6 +5,7 @@ News
 ---
 
 * Add ``hashable`` parameter.
+* Make it possible to use ``@memoized`` as equivalent of ``@memoized()``.
 
 0.1
 ---

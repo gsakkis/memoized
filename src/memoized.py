@@ -9,13 +9,16 @@ except ImportError:
 __all__ = ["memoized"]
 
 
-def memoized(is_method=False, allow_named=None, hashable=True,
+def memoized(func=None, is_method=False, allow_named=None, hashable=True,
              signature_preserving=False, cache=None):
-    """A generic efficient memoized decorator factory.
+    """A generic efficient memoized decorator.
 
     Creates a memoizing decorator that decorates a function as efficiently as
     possible given the function's signature and the passed options.
 
+    :param func: If not None it decorates the given callable ``func``, otherwise
+        it returns a decorator. Basically a convenience for creating a decorator
+        with the default parameters as ``@memoized`` instead of ``@memoized()``.
     :param is_method: Specify whether the decorated function is going to be a
         method. Currently this is only used as a hint for returning an efficient
         implementation for single argument functions (but not methods).
@@ -31,12 +34,11 @@ def memoized(is_method=False, allow_named=None, hashable=True,
         the memoized values. The cache instance must implement ``__getitem__``
         and ``__setitem__``. Defaults to a new empty dict.
     """
-    return functools.partial(_memoized_dispatcher, is_method=is_method,
-                             allow_named=allow_named, hashable=hashable,
-                             cache=cache, signature_preserving=signature_preserving)
+    if func is None:
+        return functools.partial(memoized, is_method=is_method,
+            allow_named=allow_named, hashable=hashable, cache=cache,
+            signature_preserving=signature_preserving)
 
-
-def _memoized_dispatcher(func, is_method, allow_named, hashable, signature_preserving, cache):
     spec = inspect.getargspec(func)
 
     if signature_preserving:
