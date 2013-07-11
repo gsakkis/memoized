@@ -1,8 +1,9 @@
 from inspect import getargspec
-from memoized import memoized
-import unittest
+from memoized import memoized, decorator
+from unittest import TestCase, skipUnless
 
-class MemoizedTestCase(unittest.TestCase):
+
+class MemoizedTestCase(TestCase):
 
     def setUp(self):
         self.calls = 0
@@ -130,6 +131,7 @@ class MemoizedTestCase(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.multicall(x.bad_mf0, "", 1)
 
+    @skipUnless(decorator, "Requires the decorator package")
     def test_preserve_signature(self):
         for f in self.f0, self.f1, self.f2, self.f3, self.f4, self.f5:
             sigmemfunc = memoized(signature_preserving=True)(f)
