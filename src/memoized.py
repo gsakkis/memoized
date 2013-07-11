@@ -39,13 +39,12 @@ def memoized(func=None, is_method=False, allow_named=None, hashable=True,
             allow_named=allow_named, hashable=hashable, cache=cache,
             signature_preserving=signature_preserving)
 
-    spec = inspect.getargspec(func)
-
     if signature_preserving:
         if decorator is None:
             raise ValueError("The decorator module is required for signature_preserving=True")
         return _sig_preserving_memoized(func, hashable, cache)
 
+    spec = inspect.getargspec(func)
     if allow_named is None:
         allow_named = bool(spec.defaults)
     if allow_named or spec.keywords:
