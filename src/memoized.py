@@ -1,6 +1,9 @@
 import inspect
 import functools
-from cPickle import dumps
+try:
+    from cPickle import dumps
+except ImportError:
+    from pickle import dumps
 try:
     from decorator import decorator
 except ImportError:
