@@ -72,7 +72,7 @@ def _sig_preserving_memoized(func, hashable=True, cache=None):
         cache = {}
     def wrapper(func, *args, **kwargs):
         if hashable:
-            key = (args, frozenset(kwargs.iteritems()))
+            key = (args, frozenset(_iteritems(kwargs)))
         else:
             key = dumps((args, kwargs), -1)
         try:
@@ -89,7 +89,7 @@ def _args_kwargs_memoized(func, hashable=True, cache=None):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if hashable:
-            key = (args, frozenset(kwargs.iteritems()))
+            key = (args, frozenset(_iteritems(kwargs)))
         else:
             key = dumps((args, kwargs), -1)
         try:
@@ -147,3 +147,19 @@ def _fast_zero_arg_memoized(func):
             return ret
 
     return functools.partial(memodict().__getitem__, None)
+
+# Taken from future.util
+def _iteritems(obj, **kwargs):
+    func = getattr(obj, "iteritems", None)
+    if not func:
+        func = obj.items
+    return func(**kwargs)
+
+
+def test(start=None):
+    if not start:
+        start = 0
+    def wrapped(num):
+        start += num
+        print(start)
+    return wrapped
