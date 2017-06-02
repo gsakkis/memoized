@@ -154,12 +154,3 @@ def _iteritems(obj, **kwargs):
     if not func:
         func = obj.items
     return func(**kwargs)
-
-
-def test(start=None):
-    if not start:
-        start = 0
-    def wrapped(num):
-        start += num
-        print(start)
-    return wrapped
