@@ -7,7 +7,7 @@ NEWS = open(os.path.join(here, "NEWS.txt")).read()
 
 setup(
     name="memoized",
-    version="0.2",
+    version="0.3",
     description="General purpose efficient memoization",
     long_description=README + "\n\n" + NEWS,
     url="https://bitbucket.org/gsakkis/memoized",
@@ -25,7 +25,7 @@ setup(
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
     ]
