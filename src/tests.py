@@ -20,7 +20,7 @@ class MemoizedTestCase(TestCase):
     def multicall(self, func, args_expr, expected_calls, num_calls=10):
         self.calls = 0
         results = [eval("f(%s)" % args_expr, {}, {"f": func})
-                   for _ in xrange(num_calls)]
+                   for _ in range(num_calls)]
         self.assertEqual(self.calls, expected_calls)
         # function must be deterministic
         self.assertTrue(all(r == results[0] for r in results))
