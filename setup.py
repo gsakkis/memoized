@@ -10,7 +10,7 @@ setup(
     version="0.3",
     description="General purpose efficient memoization",
     long_description=README + "\n\n" + NEWS,
-    url="https://bitbucket.org/gsakkis/memoized",
+    url="https://github.com/gsakkis/memoized",
     license="MIT",
     author="George Sakkis",
     author_email="george.sakkis@gmail.com",
